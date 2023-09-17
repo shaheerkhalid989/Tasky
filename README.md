@@ -1,2 +1,2 @@
 # Tasky
-Repository for Project : Task management mobile application named "Tasky"
+Repository for Project : Task management web application named "Tasky"
