@@ -26,7 +26,69 @@ const RegisterUser: React.FC = () => {
             setIsLoading(false);
             history.push('/Login')
         }, 1000); // Replace 1000 with the actual loading time or async operation time
-    };  //Handle Register button
+    };
+
+    const handleRegister = async () => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Regular expression for email validation
+        // const passwordRegex = /^(?=.*[A-Z])(?=.*[\W_]).{5,}$/; // Regular expression for password validation
+
+        // Check if the email matches the pattern
+        const isEmailValid = emailRegex.test(email);
+
+        // Check if the password matches the pattern
+        // const isPasswordValid = passwordRegex.test(password);
+
+        if (!isEmailValid) {
+            // Invalid email format, show an error message or take appropriate action
+            console.log('Invalid email format');
+            setRegisterMessage('Invalid email format');
+            setTimeout(() => {
+                setRegisterMessage('');
+            }, 3000); // Clear the message after 3 seconds
+            return; // Stop further execution
+        }
+
+        // if (!isPasswordValid) {
+        //     // Invalid password format, show an error message or take appropriate action
+        //     console.log('Invalid password format');
+        //     setRegisterMessage('Password must be minimum 5 characters with 1 capital letter and 1 special character');
+        //     setTimeout(() => {
+        //         setRegisterMessage('');
+        //     }, 3000); // Clear the message after 3 seconds
+        //     return; // Stop further execution
+        // }
+
+        try {
+            const userregister = {
+                FullName: fullName,
+                UserEmail: email,
+                Role :role,
+                Password: password
+            }
+            // console.log(userregister)
+            const response = await axios.post('http://localhost:5000/api/users', userregister);
+          
+          // Handle successful login response, e.g., store token in local storage or state
+          console.log('Registration successful!', response.data);
+          if(response.data === "Email Already Exists"){
+            alert("Email Already Exists");
+        }else{
+            alert("Registration Successfully");
+            window.location.href="/login";
+        }
+        } catch (error) {
+          console.log('Registration failed:', error);
+          // Handle Registration failure, show error message, etc.
+          setRegisterMessage('Registration failed. Please try again');
+        }
+        setFullName('');
+        setEmail('');
+        setRole('');
+        setPassword('');
+        setTimeout(() => {
+            setRegisterMessage('');
+          }, 3000);
+      };  //Handle Register
 
     return(
         <div className='w-full h-screen flex items-center'>
@@ -84,7 +146,7 @@ const RegisterUser: React.FC = () => {
 
                     </div>
                     <div className="w-full flex flex-col">
-                        <button className='w-full text-white font-semibold my-2 bg-[#060606] rounded-md p-4 text-center flex items-center justify-center cursor-pointer hover:text-black hover:bg-white'>
+                        <button onClick={handleRegister} className='w-full text-white font-semibold my-2 bg-[#060606] rounded-md p-4 text-center flex items-center justify-center cursor-pointer hover:text-black hover:bg-white'>
                             Sign up
                         </button>
                         {RegisterMessage && <p className='flex justify-center text-blue-700 font-semibold'>{RegisterMessage}</p>}
