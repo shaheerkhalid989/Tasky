@@ -100,36 +100,6 @@ const HomePage = () => {
             </path>
         </svg>
     );
-
-    const addBoardToWorkspace = (boardName: string) => {
-        // Logic to add board to the selected workspace
-        // console.log(`Adding board "${boardName}" to workspace "${selectedWorkspace}"`);
-
-        // Placeholder logic - Simulating adding a board to the selected workspace
-        const updatedWorkspaces = workspaces.map((workspace) => {
-            if (workspace.name === selectedWorkspace) {
-                // Simulating adding the board to the workspace
-                // console.log(`Board "${boardName}" added to workspace "${selectedWorkspace}"`);
-                return {
-                    ...workspace,
-                    boards: [...workspace.boards, boardName],
-                };
-            }
-            return workspace;
-        });
-    
-        // Update the state with the new workspace data (assuming 'boards' array exists in each workspace)
-        setWorkspaces(updatedWorkspaces);
-    };
-
-    const handleAddBoard = () => {
-        setShowCreateBoardModal(true);
-    };
-    // const handleWorkspaceSelection = (workspaceName) => {
-    //     setSelectedWorkspace(workspaceName);
-    //     setShowCreateBoardModal(true);
-    // };
-
     // Methods-----------------------------------------------
 
     return (
@@ -209,6 +179,7 @@ const HomePage = () => {
                                     </ul>
                                 </div>
                             )}
+                            
                     </div>
                 </div>
                 <div className="flex items-center space-x-4">
@@ -347,7 +318,6 @@ const HomePage = () => {
 
                 </div>
                 {/* div for side bar ended */}
-
             </div>  
             {/* div for after bar ended*/}
         </div> /* Main Div ended */
