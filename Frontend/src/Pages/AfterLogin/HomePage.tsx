@@ -60,6 +60,101 @@ const HomePage = () => {
         closeDropdowns();
         setShowDropdown4(!showDropdown4);
     }
+    const getAllWorkspaces = async () => {
+        try {
+
+            const token = localStorage.getItem('token');
+            const response = await axios({
+                method: 'get',
+                url: serverURL,
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            });
+            console.log(response.data);
+            // Check if response contains workspaces data
+            if (response.data && response.data.length > 0) {
+                // Update workspaces list if data exists
+                setWorkspaces(response.data);
+            } else {
+                // Handle the case when no workspaces are present
+                console.log('No workspaces found');
+            }
+        } catch (error) {
+            // Handle errors if any
+            console.error('Error:', error);
+        }
+    };
+    useEffect(() => {
+        // Fetch workspaces when the component mounts
+        getAllWorkspaces();
+    }, []); // Run this effect only once when the component mounts
+    const createWorkspace = async () => {
+        try{
+            const workspaceName = prompt('Enter workspace name:');
+            if (!workspaceName) return;
+
+            const token = localStorage.getItem('token');
+            const newWorkspaceData = {
+                WorkspaceName: workspaceName
+            };
+            const createWorkspaceResponse = await axios({
+                method: 'post',
+                url: 'http://localhost:5000/api/workspace',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`  },
+                data: newWorkspaceData,
+            });
+            // console.log(createWorkspaceResponse.data);
+    
+            // if (createWorkspaceResponse.data === 'Invalid token. Please log in again.') {
+            //     alert('Session expired. Please log in again.');
+            //     localStorage.removeItem('token');
+            //     history.push('/login'); // Redirect to the login page
+            //     return;
+            // }
+            if (createWorkspaceResponse.data === 'Workspace already exist'){
+                alert('This workspace already exists');
+            }else{
+                alert("Successfully created workspace");
+            }
+        }catch(error){
+            setWorkspaceMessage("Error occured. Please try again!");
+        }
+
+        setTimeout(() => {
+            setWorkspaceMessage('');
+          }, 3000);
+    };
+
+    const deleteWorkspaceFromDB = async (workspaceNameToDelete) => {
+        const enteredName = prompt('Enter the workspace name to delete:');
+      
+        if (enteredName !== workspaceNameToDelete) {
+          alert('Workspace name entered does not match. Deletion aborted.');
+          return;
+        }
+      
+        try {
+          const token = localStorage.getItem('token');
+          const deleteWorkspaceResponse = await axios.delete(
+            `http://localhost:5000/api/workspace/delete${workspaceNameToDelete}`,
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              }
+            }
+          );
+          if(deleteWorkspaceResponse.data === 'Workspace deleted successfully'){
+            alert(`Deleted Workspace : ${workspaceNameToDelete}`);
+            getAllWorkspaces();
+          }
+          else{
+            alert('Workspace not found or unauthorized to delete');
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          alert('An error occurred while deleting the workspace');
+        }
+      };
       
 
     const WorkspaceIcon = () => (
@@ -100,6 +195,51 @@ const HomePage = () => {
             </path>
         </svg>
     );
+
+    const renderCurrentComponent = () => {
+		switch (currentComponent) {
+			case "HomeComponent":
+				return <HomeComponent/>;
+			case "BoardComponent":
+				return <BoardComponent/>;
+			case "TemplateComponent":
+				return <TemplateComponent/>;
+			// case "UserChangePassword":
+			// 	return <UserChangePassword />;
+			default:
+				return null;
+		}
+	};
+
+    const addBoardToWorkspace = (boardName: string) => {
+        // Logic to add board to the selected workspace
+        // console.log(`Adding board "${boardName}" to workspace "${selectedWorkspace}"`);
+
+        // Placeholder logic - Simulating adding a board to the selected workspace
+        const updatedWorkspaces = workspaces.map((workspace) => {
+            if (workspace.name === selectedWorkspace) {
+                // Simulating adding the board to the workspace
+                // console.log(`Board "${boardName}" added to workspace "${selectedWorkspace}"`);
+                return {
+                    ...workspace,
+                    boards: [...workspace.boards, boardName],
+                };
+            }
+            return workspace;
+        });
+    
+        // Update the state with the new workspace data (assuming 'boards' array exists in each workspace)
+        setWorkspaces(updatedWorkspaces);
+    };
+
+    const handleAddBoard = () => {
+        setShowCreateBoardModal(true);
+    };
+    // const handleWorkspaceSelection = (workspaceName) => {
+    //     setSelectedWorkspace(workspaceName);
+    //     setShowCreateBoardModal(true);
+    // };
+
     // Methods-----------------------------------------------
 
     return (
@@ -180,6 +320,11 @@ const HomePage = () => {
                                 </div>
                             )}
                             
+                        <CreateBoardModal
+                            isOpen={showCreateBoardModal}
+                            onClose={() => setShowCreateBoardModal(false)}
+                            addBoard={addBoardToWorkspace}
+                        />
                     </div>
                 </div>
                 <div className="flex items-center space-x-4">
@@ -295,6 +440,10 @@ const HomePage = () => {
                                             </div>
                                         </div>
                                         <button
+                                            onClick={() => {
+                                                const workspaceNameToDelete = workspace.WorkspaceName;
+                                                deleteWorkspaceFromDB(workspaceNameToDelete);
+                                            }}
                                             className="focus:outline-none"
                                             >
                                             <DeleteIcon/>
@@ -302,7 +451,7 @@ const HomePage = () => {
                                     </div>
                                 ))}
                                 </div>
-                                <button className="flex items-center mt-2 text-blue-500 focus:outline-none">
+                                <button onClick={createWorkspace} className="flex items-center mt-2 text-blue-500 focus:outline-none">
                                     <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
                                         <path
                                         fillRule="evenodd"
@@ -318,6 +467,12 @@ const HomePage = () => {
 
                 </div>
                 {/* div for side bar ended */}
+
+                {/* div for rendring component */}
+                <div>
+                    {renderCurrentComponent()}
+                </div>  
+                {/* div for rendring component ended */}
             </div>  
             {/* div for after bar ended*/}
         </div> /* Main Div ended */
